@@ -9,15 +9,11 @@ import SpeedDialIcon from '@mui/material/SpeedDialIcon';
 import SpeedDialAction from '@mui/material/SpeedDialAction';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import ZoomInIcon from '@mui/icons-material/ZoomIn';
-import ZoomOutIcon from '@mui/icons-material/ZoomOut';
-import RotateLeftIcon from '@mui/icons-material/RotateLeft';
-import RotateRightIcon from '@mui/icons-material/RotateRight';
-import FlipIcon from '@mui/icons-material/Flip';
 import EditIcon from '@mui/icons-material/Edit';
-import ClearIcon from '@mui/icons-material/Clear';
 import MenuIcon from '@mui/icons-material/Menu';
-function Crp({ image }) {
+import ButtonDownload from './ButtonDownload';
+function Crp(props) {
+    const { image, showDownload, showCropperPreview, showShapeOfSpencil, customProcess } = props;
     const cropperRef = useRef(null);//ref of cropper
     const previewRef = useRef(null);//ref of preview of cropper
     const [shapeOfSpencil, setShapeOfSpencil] = useState(RectangleStencil)
@@ -54,42 +50,12 @@ function Crp({ image }) {
             cropperRef.current.reset();
         }
     };
-    // all the actions :zoom rotate flip reset
-    const actions = [
-        { icon: <ClearIcon />, name: 'Reset', key: '1', fct: reset },
-        { icon: <ZoomInIcon />, name: 'Zoom in', key: '2', fct: () => zoom(2) },
-        { icon: <ZoomOutIcon />, name: 'Zoom out', key: '3', fct: () => zoom(0.5) },
-        { icon: <RotateRightIcon />, name: 'Rotate', key: '4', fct: () => rotate(90) },
-        { icon: <RotateLeftIcon />, name: 'Rotate', key: '5', fct: () => rotate(-90) },
-        { icon: <FlipIcon />, name: 'FlipRight', key: '6', fct: () => flip(true, false) },
-        { icon: <FlipIcon sx={{ transform: 'rotate(90deg)' }} />, name: 'FlipDown', key: '7', fct: () => flip(false, true) },
-    ];
     //preview
     const onUpdate = () => {
-        previewRef.current?.refresh();
-    };
-    //download the cropper
-    const downloadImage = () => {
-        if (!cropperRef.current) {
-            return;
+        if (previewRef.current) {
+            previewRef.current?.refresh();
         }
-        const canvas = cropperRef.current.getCanvas();
-        if (!canvas) {
-            return;
-        }
-        canvas.toBlob((blob) => {
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.download = 'cropped-image.jpg';
-            link.href = url;
-            link.click();
-            URL.revokeObjectURL(url);
-        });
     };
-    //options for the user to apply
-    const options = [
-        { label: 'download', fct: downloadImage }
-    ]
     // menu for shape of spencil
     const MenuOptions = [
         { label: 'RectangleStencil', fct: () => setShapeOfSpencil(RectangleStencil) },
@@ -116,9 +82,7 @@ function Crp({ image }) {
                     src={imageSrc}
                     className='cropper'
                     stencilComponent={shapeOfSpencil}
-                    stencilProps={{
-                        grid: true,
-                    }}
+                    stencilProps={{grid: true}}
                     onUpdate={onUpdate}
                     defaultSize={defaultSize}
                     style={{ height: '100%', width: '100%', backgroundColor: 'primary.light' }}
@@ -133,58 +97,23 @@ function Crp({ image }) {
                         </Button>
                     </>
                 }
-                <MenuIcon
-                    aria-controls={open ? 'basic-menu' : undefined}
-                    aria-haspopup="true"
-                    aria-expanded={open ? 'true' : undefined}
-                    onClick={handleClick}
-                    sx={{ color: 'primary.main', fontSize: '2em', position: 'absolute', top: 2, right: 10, cursor: 'pointer' }} >
-                </MenuIcon>
-                <Menu
-                    anchorEl={anchorEl}
-                    open={open}
-                    onClose={handleClose}
-                    onClick={handleClose}
-                    PaperProps={{
-                        elevation: 0,
-                        sx: {
-                            overflow: 'visible',
-                            filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.32))',
-                            mt: 1.5,
-                            '& .MuiAvatar-root': { width: 32, height: 32, ml: -0.5, mr: 1 },
-                            '&:before': { content: '""', display: 'block', position: 'absolute', top: 0, right: 14, width: 10, height: 10, bgcolor: 'background.paper', transform: 'translateY(-50%) rotate(45deg)', zIndex: 0 },
-                        },
-                    }}
-                    transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-                    anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-                >
-                    {
-                        MenuOptions.map(menu => (
-                            <MenuItem key={menu.label} onClick={menu.fct} sx={{ color: ((shapeOfSpencil.displayName) == (menu.label)) && 'primary.main', fontWeight: 'bold' }}>
-                                {menu.label}
-                            </MenuItem>
-                        ))
-                    }
-
-                </Menu>
-                {
                     <SpeedDial
                         ariaLabel="SpeedDial basic example"
                         sx={{ position: "absolute", bottom: 10, right: 10 }}
                         icon={<SpeedDialIcon openIcon={<EditIcon />} />}
                     >
-                        {actions.map((action) => (
+                        {customProcess.map((action) => (
                             <SpeedDialAction
                                 key={action.key}
                                 icon={action.icon}
                                 tooltipTitle={action.name}
-                                onClick={action.fct}
+                                onClick={eval(action.fct)}
                                 sx={{ color: 'primary.main', marginBottom: 0 }}
                             />
                         ))}
                     </SpeedDial>
-                }
                 {
+                    showCropperPreview &&
                     <CropperPreview
                         ref={previewRef}
                         cropper={cropperRef}
@@ -192,14 +121,49 @@ function Crp({ image }) {
                         className='preview'
                     />
                 }
+                {
+                    showShapeOfSpencil && <>
+                        <MenuIcon
+                            aria-controls={open ? 'basic-menu' : undefined}
+                            aria-haspopup="true"
+                            aria-expanded={open ? 'true' : undefined}
+                            onClick={handleClick}
+                            sx={{ color: 'primary.main', fontSize: '2em', position: 'absolute', top: 2, right: 10, cursor: 'pointer' }} >
+                        </MenuIcon>
+                        <Menu
+                            anchorEl={anchorEl}
+                            open={open}
+                            onClose={handleClose}
+                            onClick={handleClose}
+                            PaperProps={{
+                                elevation: 0,
+                                sx: {
+                                    overflow: 'visible',
+                                    filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.32))',
+                                    mt: 1.5,
+                                    '& .MuiAvatar-root': { width: 32, height: 32, ml: -0.5, mr: 1 },
+                                    '&:before': { content: '""', display: 'block', position: 'absolute', top: 0, right: 14, width: 10, height: 10, bgcolor: 'background.paper', transform: 'translateY(-50%) rotate(45deg)', zIndex: 0 },
+                                },
+                            }}
+                            transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+                            anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+                        >
+                            {
+                                MenuOptions.map(menu => (
+                                    <MenuItem key={menu.label} onClick={menu.fct} sx={{ color: ((shapeOfSpencil.displayName) == (menu.label)) && 'primary.main', fontWeight: 'bold' }}>
+                                        {menu.label}
+                                    </MenuItem>
+                                ))
+                            }
+
+                        </Menu>
+                    </>
+                }
             </Box>
             {
-                options.map((opt) => (
-                    <Button key={opt.label} variant='contained' color='primary' onClick={opt.fct} sx={{ mt: 2, fontWeight: 'bold', letterSpacing: '2px' }}>
-                        {opt.label}
-                    </Button>
-                ))
+                showDownload && <ButtonDownload image={cropperRef.current} />
             }
+            
 
         </Box>
 
@@ -210,6 +174,7 @@ Crp.propTypes = {
         src: PropTypes.string,
     })
 }
+
 // i make array that we will pass as props all the photos scriping from the site ecommerce
 Crp.defaultProps = {
     image: {
