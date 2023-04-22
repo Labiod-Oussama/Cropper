@@ -1,5 +1,5 @@
 import { Box, Button, useMediaQuery, useTheme } from '@mui/material'
-import React, { useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import PropTypes from 'prop-types';
 import { CircleStencil, Cropper, CropperPreview, RectangleStencil, CropperPreviewRef } from 'react-advanced-cropper'
 import 'react-advanced-cropper/dist/style.css'
@@ -11,9 +11,17 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import EditIcon from '@mui/icons-material/Edit';
 import MenuIcon from '@mui/icons-material/Menu';
+import ZoomInIcon from '@mui/icons-material/ZoomIn';
+import ZoomOutIcon from '@mui/icons-material/ZoomOut';
+import RotateLeftIcon from '@mui/icons-material/RotateLeft';
+import RotateRightIcon from '@mui/icons-material/RotateRight';
+import FlipIcon from '@mui/icons-material/Flip';
+import ClearIcon from '@mui/icons-material/Clear';
 import ButtonDownload from './ButtonDownload';
+import { ButtonOpen } from './ButtonOpen';
+import ButtonServer from './ButtonServer';
 function Crp(props) {
-    const { image, showDownload, showCropperPreview, showShapeOfSpencil, customProcess } = props;
+    const { image, showCropperPreview, showShapeOfSpencil, btnSpecials } = props;
     const cropperRef = useRef(null);//ref of cropper
     const previewRef = useRef(null);//ref of preview of cropper
     const [shapeOfSpencil, setShapeOfSpencil] = useState(RectangleStencil)
@@ -70,6 +78,25 @@ function Crp(props) {
     const handleClose = () => {
         setAnchorEl(null);
     };
+    const DownloadImage = () => {
+        return <ButtonDownload image={cropperRef.current} />;
+    }
+    const OpenImage = () => {
+        return <ButtonOpen image={cropperRef.current} />
+    }
+    const Servering=()=>{
+        return <ButtonServer image={cropperRef.current}/>
+    }
+    //acions on image
+    const actions = [
+        { icon: <ClearIcon />, name: 'Reset', key: '1', fct: reset },
+        { icon: <ZoomInIcon />, name: 'Zoom in', key: '2', fct: () => zoom(2) },
+        { icon: <ZoomOutIcon />, name: 'Zoom out', key: '3', fct: () => zoom(0.5) },
+        { icon: <RotateRightIcon />, name: 'Rotate', key: '4', fct: () => rotate(90) },
+        { icon: <RotateLeftIcon />, name: 'Rotate', key: '5', fct: () => rotate(-90) },
+        { icon: <FlipIcon />, name: 'FlipRight', key: '6', fct: () => flip(true, false) },
+        { icon: <FlipIcon sx={{ transform: 'rotate(90deg)' }} />, name: 'FlipDown', key: '7', fct: () => flip(false, true) },
+    ];
     // responsive mui
     const theme = useTheme()
     const isMatchedTablette = useMediaQuery(theme.breakpoints.down('md'))
@@ -82,7 +109,7 @@ function Crp(props) {
                     src={imageSrc}
                     className='cropper'
                     stencilComponent={shapeOfSpencil}
-                    stencilProps={{grid: true}}
+                    stencilProps={{ grid: true }}
                     onUpdate={onUpdate}
                     defaultSize={defaultSize}
                     style={{ height: '100%', width: '100%', backgroundColor: 'primary.light' }}
@@ -97,21 +124,21 @@ function Crp(props) {
                         </Button>
                     </>
                 }
-                    <SpeedDial
-                        ariaLabel="SpeedDial basic example"
-                        sx={{ position: "absolute", bottom: 10, right: 10 }}
-                        icon={<SpeedDialIcon openIcon={<EditIcon />} />}
-                    >
-                        {customProcess.map((action) => (
-                            <SpeedDialAction
-                                key={action.key}
-                                icon={action.icon}
-                                tooltipTitle={action.name}
-                                onClick={eval(action.fct)}
-                                sx={{ color: 'primary.main', marginBottom: 0 }}
-                            />
-                        ))}
-                    </SpeedDial>
+                <SpeedDial
+                    ariaLabel="SpeedDial basic example"
+                    sx={{ position: "absolute", bottom: 10, right: 10 }}
+                    icon={<SpeedDialIcon openIcon={<EditIcon />} />}
+                >
+                    {actions.map((action) => (
+                        <SpeedDialAction
+                            key={action.key}
+                            icon={action.icon}
+                            tooltipTitle={action.name}
+                            onClick={action.fct}
+                            sx={{ color: 'primary.main', marginBottom: 0 }}
+                        />
+                    ))}
+                </SpeedDial>
                 {
                     showCropperPreview &&
                     <CropperPreview
@@ -160,10 +187,19 @@ function Crp(props) {
                     </>
                 }
             </Box>
-            {
-                showDownload && <ButtonDownload image={cropperRef.current} />
-            }
+            <Box display='flex' flexDirection={isMatchedTablette?'column':'row'} mb={2} flexWrap='wrap'>
+                {
+                    btnSpecials.filter(btn => {
+                        return btn.show
+                    }).map((btn, index) => (
+                        <Box key={index} mr={!isMatchedTablette && 1}>
+                            {eval(btn.fct)()}
+                        </Box>
+                    ))
+                }
+             </Box>
             
+
 
         </Box>
 
@@ -172,7 +208,16 @@ function Crp(props) {
 Crp.propTypes = {
     image: PropTypes.shape({
         src: PropTypes.string,
-    })
+    }),
+    showCropperPreview:PropTypes.bool.isRequired,
+    showShapeOfSpencil:PropTypes.bool.isRequired,
+    btnSpecials:PropTypes.arrayOf(
+        PropTypes.shape({
+            show: PropTypes.bool,
+            fct: PropTypes.string
+          })
+    ).isRequired
+
 }
 
 // i make array that we will pass as props all the photos scriping from the site ecommerce

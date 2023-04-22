@@ -2,15 +2,12 @@ import { Button } from '@mui/material'
 import React, { useEffect, useState } from 'react'
 import DownloadIcon from '@mui/icons-material/Download';
 const ButtonDownload = ({ image }) => {
-    const [photo, setPhoto] = useState(null)
-    useEffect(() => {
-        setPhoto(image)
-    }, [image])
     const downloadImage = () => {
-        if (!photo) {
+        if (!image) {
             return;
         }
-        const canvas = photo.getCanvas();
+        const canvas = image.getCanvas();
+        console.log(canvas);
         const width = (canvas.getAttribute('width'));
         const height =(canvas.getAttribute('height'));
         if (!canvas) {
@@ -26,7 +23,7 @@ const ButtonDownload = ({ image }) => {
         });
     };
     return (
-        <Button variant='contained' color='primary' onClick={downloadImage} startIcon={<DownloadIcon />} sx={{ mt: 2, fontWeight: 'bold', letterSpacing: '2px' }}>
+        <Button variant='contained' color='primary' onClick={downloadImage} startIcon={<DownloadIcon />} sx={{ mt: 1, fontWeight: 'bold', letterSpacing: '2px' }}>
             Download
         </Button>
     )
