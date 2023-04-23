@@ -17,16 +17,13 @@ import RotateLeftIcon from '@mui/icons-material/RotateLeft';
 import RotateRightIcon from '@mui/icons-material/RotateRight';
 import FlipIcon from '@mui/icons-material/Flip';
 import ClearIcon from '@mui/icons-material/Clear';
-import ButtonDownload from './ButtonDownload';
-import { ButtonOpen } from './ButtonOpen';
-import ButtonServer from './ButtonServer';
 function Crp(props) {
-    const { image, showCropperPreview, showShapeOfSpencil, btnSpecials } = props;
+    const { image, showCropperPreview, showShapeOfSpencil, btnSpecials, handleCropper } = props;
     const cropperRef = useRef(null);//ref of cropper
     const previewRef = useRef(null);//ref of preview of cropper
     const [shapeOfSpencil, setShapeOfSpencil] = useState(RectangleStencil)
     const [imageChosen, setImageChosen] = useState(0); // the numero of image of defaultProps
-    const imageSrc = image ? image.src : Crp.defaultProps.image.src[imageChosen];
+    // const src=image?.src;
     /* fill the image*/
     const defaultSize = ({ imageSize, visibleArea }) => {
         return {
@@ -78,15 +75,6 @@ function Crp(props) {
     const handleClose = () => {
         setAnchorEl(null);
     };
-    const DownloadImage = () => {
-        return <ButtonDownload image={cropperRef.current} />;
-    }
-    const OpenImage = () => {
-        return <ButtonOpen image={cropperRef.current} />
-    }
-    const Servering=()=>{
-        return <ButtonServer image={cropperRef.current}/>
-    }
     //acions on image
     const actions = [
         { icon: <ClearIcon />, name: 'Reset', key: '1', fct: reset },
@@ -97,6 +85,12 @@ function Crp(props) {
         { icon: <FlipIcon />, name: 'FlipRight', key: '6', fct: () => flip(true, false) },
         { icon: <FlipIcon sx={{ transform: 'rotate(90deg)' }} />, name: 'FlipDown', key: '7', fct: () => flip(false, true) },
     ];
+    //handleCropper(send the cropper to parent)
+    useEffect(() => {
+        if (cropperRef.current) {
+            handleCropper(cropperRef.current)
+        }
+    }, [image])
     // responsive mui
     const theme = useTheme()
     const isMatchedTablette = useMediaQuery(theme.breakpoints.down('md'))
@@ -106,7 +100,7 @@ function Crp(props) {
             <Box sx={{ position: 'relative', width: isMatchedPhone ? '90%' : isMatchedTablette ? '90%' : '70%', height: '80%' }}>
                 <Cropper
                     ref={cropperRef}
-                    src={imageSrc}
+                    src={image?.src}
                     className='cropper'
                     stencilComponent={shapeOfSpencil}
                     stencilProps={{ grid: true }}
@@ -114,16 +108,6 @@ function Crp(props) {
                     defaultSize={defaultSize}
                     style={{ height: '100%', width: '100%', backgroundColor: 'primary.light' }}
                 />
-                {
-                    !image && <>
-                        <Button variant='outlined' color='primary' disabled={imageChosen == 0} onClick={() => imageChosen > 0 && setImageChosen(prev => prev - 1)} sx={{ position: 'absolute', top: isMatchedTablette ? '103%' : '50%', left: isMatchedTablette ? '0' : '-80px', fontWeight: 'bold' }}>
-                            &lt;
-                        </Button>
-                        <Button variant='outlined' color='primary' disabled={imageChosen == Crp.defaultProps.image.src.length - 1} onClick={() => imageChosen < (Crp.defaultProps.image.src.length - 1) && setImageChosen(prev => prev + 1)} sx={{ position: 'absolute', top: isMatchedTablette ? '103%' : '50%', right: isMatchedTablette ? '0' : '-80px', fontWeight: 'bold' }}>
-                            &gt;
-                        </Button>
-                    </>
-                }
                 <SpeedDial
                     ariaLabel="SpeedDial basic example"
                     sx={{ position: "absolute", bottom: 10, right: 10 }}
@@ -187,18 +171,23 @@ function Crp(props) {
                     </>
                 }
             </Box>
-            <Box display='flex' flexDirection={isMatchedTablette?'column':'row'} mb={2} flexWrap='wrap'>
+            <Box display='flex' flexDirection={isMatchedTablette ? 'column' : 'row'} mb={2} mt={2} flexWrap='wrap'>
                 {
-                    btnSpecials.filter(btn => {
-                        return btn.show
-                    }).map((btn, index) => (
-                        <Box key={index} mr={!isMatchedTablette && 1}>
-                            {eval(btn.fct)()}
-                        </Box>
+                    btnSpecials.map(btn => (
+                        <Button
+                            key={btn.key}
+                            variant='contained'
+                            color='primary'
+                            startIcon={btn.icon}
+                            onClick={btn.fct}
+                            sx={{ mr: !isMatchedTablette && 1, mb: isMatchedTablette && 1 }}
+                        >
+                            {btn.label}
+                        </Button>
                     ))
                 }
-             </Box>
-            
+            </Box>
+
 
 
         </Box>
@@ -207,27 +196,25 @@ function Crp(props) {
 }
 Crp.propTypes = {
     image: PropTypes.shape({
-        src: PropTypes.string,
+        src: PropTypes.string
+
     }),
-    showCropperPreview:PropTypes.bool.isRequired,
-    showShapeOfSpencil:PropTypes.bool.isRequired,
-    btnSpecials:PropTypes.arrayOf(
+    showCropperPreview: PropTypes.bool.isRequired,
+    showShapeOfSpencil: PropTypes.bool.isRequired,
+    btnSpecials: PropTypes.arrayOf(
         PropTypes.shape({
-            show: PropTypes.bool,
-            fct: PropTypes.string
-          })
+            key: PropTypes.number.isRequired,
+            label: PropTypes.string.isRequired,
+            icon: PropTypes.element.isRequired,
+            fct: PropTypes.func.isRequired
+        })
     ).isRequired
 
 }
 
-// i make array that we will pass as props all the photos scriping from the site ecommerce
 Crp.defaultProps = {
     image: {
-        src: [
-            'https://images.pexels.com/photos/16292477/pexels-photo-16292477.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
-            'https://images.pexels.com/photos/11895469/pexels-photo-11895469.jpeg?auto=compress&cs=tinysrgb&w=600&lazy=load',
-            'https://images.pexels.com/photos/9213617/pexels-photo-9213617.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
-        ]
+        src: 'https://images.pexels.com/photos/16292477/pexels-photo-16292477.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2'
     }
 }
 export default Crp
