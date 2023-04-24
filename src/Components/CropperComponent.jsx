@@ -1,18 +1,19 @@
 import { Box } from "@mui/material";
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
-import ZoomInIcon from "@mui/icons-material/ZoomIn";
-import ZoomOutIcon from "@mui/icons-material/ZoomOut";
-import RotateLeftIcon from "@mui/icons-material/RotateLeft";
-import RotateRightIcon from "@mui/icons-material/RotateRight";
-import FlipIcon from "@mui/icons-material/Flip";
-import ClearIcon from "@mui/icons-material/Clear";
 import { useEffect, useRef, useState } from "react";
 import Crp from "./Crp";
 import ButtonUpload from "./ButtonUpload";
+import OpenWithIcon from "@mui/icons-material/OpenWith";
+import DownloadIcon from "@mui/icons-material/Download";
+import StorageIcon from "@mui/icons-material/Storage";
 function CropperComponent() {
   const [image, setImage] = useState(null); // image we will pass as prop to crop it
-  const inputRef = useRef(null); // ref of upload input
+  //get the cropper from the Crp
+  const [cropper, setCropper] = useState(null);
+  const handleCropper = (e) => {
+    setCropper(e);
+  };
   //dialog
   const [openDialog, setOpenDialog] = useState(false);
   const handleClickOpen = () => {
