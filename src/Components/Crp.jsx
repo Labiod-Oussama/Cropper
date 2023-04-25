@@ -18,13 +18,21 @@ import RotateRightIcon from '@mui/icons-material/RotateRight';
 import FlipIcon from '@mui/icons-material/Flip';
 import ClearIcon from '@mui/icons-material/Clear';
 function Crp(props) {
-    const { image, showCropperPreview, showShapeOfSpencil, btnSpecials, handleCropper } = props;
+    const { image,uploadedOrDefault, showCropperPreview, showShapeOfSpencil, btnSpecials, handleCropper } = props;
     const cropperRef = useRef(null);//ref of cropper
     const previewRef = useRef(null);//ref of preview of cropper
     const [shapeOfSpencil, setShapeOfSpencil] = useState(RectangleStencil)
     const [imageChosen, setImageChosen] = useState(0); // the numero of image of defaultProps
-    // const src=image?.src;
-    /* fill the image*/
+    const [img, setImg] = useState(image) //the array of images 
+    useEffect(() => {
+        if (uploadedOrDefault) {
+            setImageChosen(image.length-1)
+        }else{
+            setImageChosen(0)
+        }
+        setImg(image)
+    }, [image])
+     /* fill the image*/
     const defaultSize = ({ imageSize, visibleArea }) => {
         return {
             width: (visibleArea || imageSize).width,
@@ -95,12 +103,13 @@ function Crp(props) {
     const theme = useTheme()
     const isMatchedTablette = useMediaQuery(theme.breakpoints.down('md'))
     const isMatchedPhone = useMediaQuery(theme.breakpoints.down('sm'))
+
     return (
         <Box width={isMatchedPhone ? '80vw' : isMatchedTablette ? '70vw' : '60vw'} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
             <Box sx={{ position: 'relative', width: isMatchedPhone ? '90%' : isMatchedTablette ? '90%' : '70%', height: '80%' }}>
                 <Cropper
                     ref={cropperRef}
-                    src={image?.src}
+                    src={img[imageChosen]?.src}
                     className='cropper'
                     stencilComponent={shapeOfSpencil}
                     stencilProps={{ grid: true }}
@@ -108,6 +117,16 @@ function Crp(props) {
                     defaultSize={defaultSize}
                     style={{ height: '100%', width: '100%', backgroundColor: 'primary.light' }}
                 />
+                {
+                    ![0,1].includes(image.length)  && <>
+                        <Button variant='outlined' color='primary' disabled={imageChosen == 0} onClick={() => imageChosen > 0 && setImageChosen(prev => prev - 1)} sx={{ position: 'absolute', top: isMatchedTablette ? '103%' : '50%', left: isMatchedTablette ? '0' : '-80px', fontWeight: 'bold' }}>
+                            &lt;
+                        </Button>
+                        <Button variant='outlined' color='primary' disabled={imageChosen == img.length - 1} onClick={() => imageChosen < (img.length - 1) && setImageChosen(prev => prev + 1)} sx={{ position: 'absolute', top: isMatchedTablette ? '103%' : '50%', right: isMatchedTablette ? '0' : '-80px', fontWeight: 'bold' }}>
+                            &gt;
+                        </Button>
+                    </>
+                }
                 <SpeedDial
                     ariaLabel="SpeedDial basic example"
                     sx={{ position: "absolute", bottom: 10, right: 10 }}
@@ -187,18 +206,15 @@ function Crp(props) {
                     ))
                 }
             </Box>
-
-
-
         </Box>
-
     )
 }
 Crp.propTypes = {
-    image: PropTypes.shape({
-        src: PropTypes.string
-
-    }),
+    image: PropTypes.arrayOf(
+        PropTypes.shape({
+            src: PropTypes.string
+        })
+    ),
     showCropperPreview: PropTypes.bool.isRequired,
     showShapeOfSpencil: PropTypes.bool.isRequired,
     btnSpecials: PropTypes.arrayOf(
@@ -212,9 +228,21 @@ Crp.propTypes = {
 
 }
 
+// i make array that we will pass as props all the photos scriping from the site ecommerce
 Crp.defaultProps = {
-    image: {
-        src: 'https://images.pexels.com/photos/16292477/pexels-photo-16292477.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2'
-    }
+    image: [
+        {
+            src: 'https://images.pexels.com/photos/16292477/pexels-photo-16292477.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
+        },
+        {
+            src: 'https://images.pexels.com/photos/15191282/pexels-photo-15191282.jpeg?auto=compress&cs=tinysrgb&w=600&lazy=load',
+        },
+        {
+            src: 'https://images.pexels.com/photos/16022624/pexels-photo-16022624.jpeg?auto=compress&cs=tinysrgb&w=600&lazy=load'
+        }
+
+    ]
+
 }
+
 export default Crp

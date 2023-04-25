@@ -9,17 +9,15 @@ const ButtonUpload = ({ imageUploaded }) => {
         const { files } = event.target;
         if (files && files[0]) {
             const blob = URL.createObjectURL(files[0]);
-            console.log( blob);
             imageUploaded({
-                img:{
+                img: {
                     src: blob,
-                    type: files[0].type
                 }
             })
         }
         event.target.value = '';
     };
-   
+
     return (
         <Button variant='outlined' component='label' color='primary' startIcon={<UploadIcon />} sx={{ margin: '0px auto 20px', fontWeight: 'bold', letterSpacing: '2px' }} >
             Upload photo

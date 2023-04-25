@@ -9,11 +9,29 @@ import DownloadIcon from '@mui/icons-material/Download';
 import StorageIcon from '@mui/icons-material/Storage';
 function CropperComponent() {
   const [image, setImage] = useState(null); // image we will pass as prop to crop it
-   //get the cropper from the Crp 
+  const img = image?.img; //to get the image objet to send as a props
+  const [arrayOfImages, setArrayOfImages] = useState([])
+  useEffect(() => {
+    if (img) {
+      setArrayOfImages([...arrayOfImages, img])
+    }
+  }, [img])
+  //get the cropper from the Crp 
   const [cropper, setCropper] = useState(null)
   const handleCropper = (e) => {
     setCropper(e);
   }
+  //to get the image uploaded
+  const imageUploaded = (image) => {
+    setImage(image)
+  }
+  // useEffect(() => {
+  //   return () => {
+  //     if (img && img.src) {
+  //       URL.revokeObjectURL(img.src);
+  //     }
+  //   };
+  // }, [img]);
   //dialog
   const [openDialog, setOpenDialog] = useState(false);
   const handleClickOpen = () => {
@@ -22,16 +40,6 @@ function CropperComponent() {
   const handleClose = () => {
     setOpenDialog(false);
   };
-  const imageUploaded = (img) => {
-    setImage(img)
-  }
-  useEffect(() => {
-    return () => {
-      if (image && image.src) {
-        URL.revokeObjectURL(image.src);
-      }
-    };
-  }, [image]);
   // open the cropper in blank page
   const handleOpen = (cropper) => {
     if (!cropper) {
@@ -94,7 +102,7 @@ function CropperComponent() {
     }
 
   ]
-   return (
+  return (
     <Box sx={{ textAlign: 'center', mt: 5 }}>
       <Button variant="outlined" onClick={handleClickOpen}>
         Crop your photo
@@ -105,7 +113,14 @@ function CropperComponent() {
         maxWidth='lg'
         sx={{ textAlign: 'center' }}
       >
-        <Crp image={image?.img} showCropperPreview={true} showShapeOfSpencil={true} btnSpecials={btnSpecials} handleCropper={handleCropper} />
+        <Crp
+          image={arrayOfImages.length === 0 ? undefined : arrayOfImages}
+          uploadedOrDefault={arrayOfImages.length === 0 ? false : true}
+          showCropperPreview={true}
+          showShapeOfSpencil={true}
+          btnSpecials={btnSpecials}
+          handleCropper={handleCropper}
+        />
         <ButtonUpload imageUploaded={imageUploaded} />
       </Dialog>
     </Box>
