@@ -25,13 +25,6 @@ function CropperComponent() {
   const imageUploaded = (image) => {
     setImage(image)
   }
-  // useEffect(() => {
-  //   return () => {
-  //     if (img && img.src) {
-  //       URL.revokeObjectURL(img.src);
-  //     }
-  //   };
-  // }, [img]);
   //dialog
   const [openDialog, setOpenDialog] = useState(false);
   const handleClickOpen = () => {
